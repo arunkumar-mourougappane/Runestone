@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+set -e
+
+
+usage="$(basename "$0") [-h] [-i input file path] [-o output directory]
+Converstss a ZIP archive of webp or jpg files into a CBR (Comic Format) archive of PNG files.
+where:
+    -h  show this help text
+    -i  input ZIP archive file path
+    -o  Directory to dump the output directory"
+
+TEMPARGS_VAR=$(getopt -o i:o:h --long input-file:output-dir:help -- "$@")
+eval set -- "${TEMPARGS_VAR}"
+
+# extract options and their arguments into variables.
+while true ; do
+    case "$1" in
+        -i|--input-file)
+            file_name_arg=$2 ;
+            shift 2 ;;
+        -o|--output-dir)
+            output_dir_arg=$2 ; shift 2 ;;
+         -h|--help) echo "$usage"; exit;;
+        --) shift ; break ;;
+        *) echo "Internal error!" ; exit 1 ;;
+    esac
+done
+
+if [ -z "${file_name_arg}" ]
+then
+   echo "Bad input File path argument was provided";
+   echo "$usage"
+   exit 2;
+fi
+
+if [ -z "${output_dir_arg}" ]
+then
+   echo "Bad output directory path argument was provided";
+   echo "$usage"
+   exit 2;
+fi
+
+input_file_path="$(readlink -f "${file_name_arg}")"
+
+output_dir_path="$(readlink -f "${output_dir_arg}")"
+
+
+if [ ! -f "${input_file_path}" ]
+then
+   echo "Input File does not exist";
+   exit 3
+fi
+
+if [ ! -d "${output_dir_path}" ]
+then
+   echo "Input File does not exist";
+   exit 3
+fi
+
+compic_path="$(mktemp -d -p /tmp/)"
+
+unzip "${input_file_path}" -d "${compic_path}"
+
+input_file_name_with_ext="$(basename "$input_file_path")"
+input_file_name="${input_file_name_with_ext%.*}"
+
+for filepath in "${compic_path}"/*
+do
+   # get the file name and extensions
+   filename_with_ext=$(basename "$filepath")
+   filename="${filename_with_ext%.*}"
+   extension="${filename_with_ext##*.}"
+   filename_new="${compic_path}/${filename}.png"
+   echo "Processing ${input_file_name}, File: ${filename_with_ext}"
+   # convert webp to png
+   if [ "${filename_with_ext}" = "final.jpg" ]
+   then
+      echo "Sanitize for final.jpg"
+      rm -v "${filepath}"
+   else
+      if [ "${extension}" = "webp" ]
+      then
+         dwebp "${filepath}" -o "${filename_new}"
+         rm -v "${filepath}"
+      # convert jpg to png
+      elif [ "${extension}" = "jpg" ]
+      then
+         mogrify -format png "${filepath}" -write "${filename_new}"
+         rm -v "${filepath}"
+      # Nuke other files
+      else
+         echo "Found unsupported format, Removing ${filename_with_ext}..."
+         rm -v "${filepath}"
+      fi
+   fi
+done
+
+# repack as cbr
+zip -r "${output_dir_path}/${input_file_name}.cbr" "${compic_path}"
