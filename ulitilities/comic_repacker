@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+# -*- tab-width: 3; encoding: utf-8 -*-
+#
+## @file comic_repacker.sh
+## @author Arunkumar Mourougappane <amouroug@buffalo.edu>
+## @brief A script to read ZIP archive, convert the supported files to png and repack them as CBR.
+## @copyright MIT License
+## @version 1
+##
 
 set -e
-
 
 usage="$(basename "$0") [-h] [-i input file path] [-o output directory]
 Converstss a ZIP archive of webp or jpg files into a CBR (Comic Format) archive of PNG files.
@@ -17,10 +24,10 @@ eval set -- "${TEMPARGS_VAR}"
 while true ; do
     case "$1" in
         -i|--input-file)
-            file_name_arg=$2 ;
+            file_name_arg="$2" ;
             shift 2 ;;
         -o|--output-dir)
-            output_dir_arg=$2 ; shift 2 ;;
+            output_dir_arg="$2" ; shift 2 ;;
          -h|--help) echo "$usage"; exit;;
         --) shift ; break ;;
         *) echo "Internal error!" ; exit 1 ;;
@@ -58,43 +65,68 @@ then
    exit 3
 fi
 
-compic_path="$(mktemp -d -p /tmp/)"
+comic_dir_temp_path="$(mktemp -d -p /tmp/)"
 
-unzip "${input_file_path}" -d "${compic_path}"
+unzip -qq "${input_file_path}" -d "${comic_dir_temp_path}"
 
 input_file_name_with_ext="$(basename "$input_file_path")"
 input_file_name="${input_file_name_with_ext%.*}"
+new_comic_file_name="$(echo "${input_file_name// /_}" | tr -s _)"
 
-for filepath in "${compic_path}"/*
-do
+## @fn process_comic_image_file()
+## @brief Function that finds file extension and performs appropriate conversion to PNG
+## @param filepath Path of file on File System.
+function process_comic_image_file()
+(
+   local filepath="$1"
+   local comic_path
+   local filename_with_ext
+   local filename
+   local extension
+   local filename_new
+
+   comic_path="$(dirname "${filepath}")"
    # get the file name and extensions
-   filename_with_ext=$(basename "$filepath")
+   filename_with_ext=$(basename "${filepath}")
    filename="${filename_with_ext%.*}"
    extension="${filename_with_ext##*.}"
-   filename_new="${compic_path}/${filename}.png"
-   echo "Processing ${input_file_name}, File: ${filename_with_ext}"
+   filename_new="${comic_path}/${filename}.png"
+
+   printf "\tProcessing File: %s\n" "${filename_with_ext}"
    # convert webp to png
    if [ "${filename_with_ext}" = "final.jpg" ]
    then
       echo "Sanitize for final.jpg"
-      rm -v "${filepath}"
+      rm "${filepath}"
    else
       if [ "${extension}" = "webp" ]
       then
-         dwebp "${filepath}" -o "${filename_new}"
-         rm -v "${filepath}"
+         dwebp "${filepath}" -o "${filename_new}" -quiet
+         rm "${filepath}"
+      elif [ "${extension}" = "png" ]
+      then
+         : echo "File already compatible"
       # convert jpg to png
       elif [ "${extension}" = "jpg" ]
       then
-         mogrify -format png "${filepath}" -write "${filename_new}"
-         rm -v "${filepath}"
+         mogrify -format png "${filepath}" -write "${filename_new}" -silent
+         rm "${filepath}"
       # Nuke other files
       else
          echo "Found unsupported format, Removing ${filename_with_ext}..."
-         rm -v "${filepath}"
+         rm "${filepath}"
       fi
    fi
-done
+)
+
+
+export -f process_comic_image_file
+
+printf "Comic Name: %s\n" "${input_file_name}"
+find "${comic_dir_temp_path}" -type f ! -path '*.png' -exec bash -c 'process_comic_image_file "$@"' bash {} \;
+printf "Done!\n\n\n"
+
 
 # repack as cbr
-zip -r "${output_dir_path}/${input_file_name}.cbr" "${compic_path}"
+zip --quiet -r "${output_dir_path}/${new_comic_file_name}.cbr" "${comic_dir_temp_path}" && rm -R "${comic_dir_temp_path}"
+printf "Comic Repacked Name: %s\n" "${new_comic_file_name}.cbr"
