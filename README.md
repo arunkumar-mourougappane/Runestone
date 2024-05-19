@@ -1,7 +1,11 @@
 # ultimate-bash-additions
-An archive of all bash customizations.
 
+This is an archive of all bash customizations.
 
-## Utility Scripts:
-- comic_repacker:
-  - A script to read ZIP archive, convert the supported files to png and repack them as CBR.
+### Utility Scripts
+
+- comic_repacker
+  This script reads a ZIP archive, converts the supported files to PNG, and then repackages them as CBR.
+
+[!NOTE]
+All scripts are written for bash 5.1.16(1) and python 3.10.XX.
