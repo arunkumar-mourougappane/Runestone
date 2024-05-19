@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# source file if exists
+
+FILE_TO_SOURCE="$1"
+if [ -f "${FILE_TO_SOURCE}" ]
+then
+   "${FILE_TO_SOURCE}"
+fi
+
