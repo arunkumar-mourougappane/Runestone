@@ -12,7 +12,7 @@
 set -e
 
 usage="$(basename "$0") [-h] [-i input file path] [-o output directory]
-Converstss a ZIP archive of webp or jpg files into a CBR (Comic Format) archive of PNG files.
+Converts a ZIP archive of webp or jpg files into a CBR (Comic Format) archive of PNG files.
 where:
     -h  show this help text
     -i  input ZIP archive file path
@@ -37,14 +37,14 @@ done
 
 if [ -z "${file_name_arg}" ]
 then
-   echo "Bad input File path argument was provided";
+   echo "Error: Input file path argument was not provided.";
    echo "$usage"
    exit 2;
 fi
 
 if [ -z "${output_dir_arg}" ]
 then
-   echo "Bad output directory path argument was provided";
+   echo "Error: Output directory path argument was not provided.";
    echo "$usage"
    exit 2;
 fi
@@ -56,17 +56,19 @@ output_dir_path="$(readlink -f "${output_dir_arg}")"
 
 if [ ! -f "${input_file_path}" ]
 then
-   echo "Input File does not exist";
+   echo "Error: Input file does not exist: ${input_file_path}";
    exit 3
 fi
 
 if [ ! -d "${output_dir_path}" ]
 then
-   echo "Input File does not exist";
+   echo "Error: Output directory does not exist: ${output_dir_path}";
    exit 3
 fi
 
 comic_dir_temp_path="$(mktemp -d -p /tmp/)"
+
+trap 'rm -rf "$comic_dir_temp_path"' EXIT
 
 unzip -qq "${input_file_path}" -d "${comic_dir_temp_path}"
 

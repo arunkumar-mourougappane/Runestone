@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Source a file if it exists and is readable.
+# Usage: check_and_source <file>
+
+FILE_TO_SOURCE="$1"
+if [ -f "${FILE_TO_SOURCE}" ] && [ -r "${FILE_TO_SOURCE}" ]; then
+    source "${FILE_TO_SOURCE}"
+fi

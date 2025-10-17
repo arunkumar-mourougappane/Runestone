@@ -1,20 +1,68 @@
-# ultimate-bash-additions
+# Runestone
 
-This is an archive of all bash customizations.
+This repository contains a collection of utility scripts and bash functions to streamline your workflow.
 
-### Utility Scripts
+## Scripts
 
-- [comic_rpacker](utilities/comic_repacker) - This script reads a ZIP archive, converts the supported files to PNG, and then repackages them as CBR.
+- [add_to_path](scripts/add_to_path) - Add a directory to the PATH environment variable, avoiding duplicates.
+- [check_and_source](scripts/check_and_source) - Source a file if it exists and is readable.
+- [comic_repacker](scripts/comic_repacker) - Convert a ZIP archive of images into a CBR archive of PNG files.
+- [git-key-add](scripts/git-key-add) - Starts ssh-agent and adds keys, or simply re-adds expired keys.
+- [git-key-del](scripts/git-key-del) - Removes keys and ends the ssh-agent process.
 
-### Bash Functions
+## Installation
 
-- [ssh_key_setup](bash_functions/ssh_key_setup) ssh_key_setup
-  - [gitkeyadd](bash_functions/ssh_key_setup#gitkeyadd) - Adds git SSH Key to current SSH Agent, sets up for SSH Agent if one is not already running.
-  - [gitkeydel](bash_functions/ssh_key_setup#gitkeydel) - Removes key from SSH Agent.
-- [check_and_source](bash_functions/check_and_source) - sources a file if exists.
-- [add_to_path](bash_functions/add_to_path) - Special function to add paths Cleanly
+To use these scripts, clone the repository and add the `scripts` directory to your `PATH`.
 
+```bash
+git clone https://github.com/your-username/runestone.git
+cd runestone
+export PATH=$PWD/scripts:$PATH
+```
 
+## Usage
+
+### add_to_path
+
+Add a directory to the PATH environment variable.
+
+```bash
+add_to_path <directory> [after]
+```
+
+If `after` is specified, the directory is added to the end of the PATH. Otherwise, it is added to the beginning.
+
+### check_and_source
+
+Source a file if it exists and is readable.
+
+```bash
+check_and_source <file>
+```
+
+### comic_repacker
+
+Convert a ZIP archive of images into a CBR archive of PNG files.
+
+```bash
+comic_repacker -i <input_file> -o <output_directory>
+```
+
+### git-key-add
+
+Starts ssh-agent and adds keys, or simply re-adds expired keys.
+
+```bash
+git-key-add
+```
+
+### git-key-del
+
+Removes keys and ends the ssh-agent process.
+
+```bash
+git-key-del
+```
 
 > [!NOTE]
 > All scripts are written for bash 5.1.16(1) and python 3.10.XX.

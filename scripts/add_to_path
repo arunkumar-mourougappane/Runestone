@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Add a directory to the PATH environment variable, avoiding duplicates.
+# Usage: add_to_path <directory> [after]
+# If 'after' is specified, the directory is added to the end of the PATH.
+# Otherwise, it is added to the beginning.
+
+if [[ ":$PATH:" != *":$1:"* ]]; then
+    if [ "$2" = "after" ]; then
+        PATH="$PATH:$1"
+    else
+        PATH="$1:$PATH"
+    fi
+fi

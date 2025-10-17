@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Removes keys and ends the ssh-agent process
+ssh-add -l 2>/dev/null >/dev/null
+if [[ $? -ne 2 ]]; then
+   # Delete all loaded identities
+   ssh-add -D
+   # Attempt to exit ssh-agent
+   ssh-agent -k
+else
+   echo ssh-agent not currently running
+fi
